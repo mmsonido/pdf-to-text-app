@@ -27,8 +27,7 @@ function App() {
       });
       setText(res.data.text);
       setMsg("¡Listo!");
-    } catch (err) {
-      console.error(err);
+    } catch {
       setMsg("Error al subir el archivo.");
     }
   };
@@ -42,8 +41,6 @@ function App() {
         fontSize: "1.5rem",
         lineHeight: 1.5,
         padding: "1rem",
-        transform: "scale(1.2)",
-        transformOrigin: "top center",
       }}
     >
       <h1 style={{ fontSize: "2rem" }}>PDF → Texto</h1>
@@ -53,7 +50,10 @@ function App() {
         onChange={onChange}
         style={{ fontSize: "1.3rem", padding: "0.5rem" }}
       />
-      <button onClick={onUpload} style={{ marginLeft: 8, fontSize: "1.3rem", padding: "0.5rem 1rem" }}>
+      <button
+        onClick={onUpload}
+        style={{ marginLeft: 8, fontSize: "1.3rem", padding: "0.5rem 1rem" }}
+      >
         Subir y extraer
       </button>
       <p>{msg}</p>
