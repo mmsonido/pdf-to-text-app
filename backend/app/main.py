@@ -1,12 +1,13 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os, uuid, pathlib
+from PyPDF2 import PdfReader
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # en prod restringe dominios
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -24,7 +25,21 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 @app.post("/api/v1/upload")
 async def upload(file: UploadFile = File(...)):
-    fname = UPLOAD_DIR / f"{uuid.uuid4()}_{file.filename}"
-    with open(fname, "wb") as out:
+    # 1. Guarda el PDF
+    file_id = f"{uuid.uuid4()}_{file.filename}"
+    dest = UPLOAD_DIR / file_id
+    with open(dest, "wb") as out:
         out.write(await file.read())
-    return {"saved_as": fname.name}
+
+    # 2. Lee el PDF y extrae texto
+    try:
+        reader = PdfReader(str(dest))
+        text_chunks = []
+        for page in reader.pages:
+            text_chunks.append(page.extract_text() or "")
+        content = "\n".join(text_chunks)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF error: {e}")
+
+    # 3. Devuelve nombre de archivo + texto
+    return {"saved_as": file_id, "text": content}
